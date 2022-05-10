@@ -1,6 +1,6 @@
-import datetime
 import time
 import tkinter as tk
+from datetime import datetime, timedelta
 
 from customtkinter import CTk, CTkButton, CTkEntry, CTkFrame, CTkLabel
 
@@ -11,7 +11,6 @@ class Gui(CTk):
 
         self.title("PC Shutdown Timer")
         self.geometry("400x400+900+300")
-        self.completion_time = 0
 
         display_frame = CTkFrame(self)
         display_frame.pack()
@@ -20,29 +19,31 @@ class Gui(CTk):
 
         input_frame = CTkFrame(self)
         input_frame.pack(ipadx=10, ipady=10)
-        time_entry = CTkEntry(input_frame, placeholder_text="Minutes")
-        time_entry.grid(row=0, column=0)
-        CTkButton(input_frame, text="SET", command=self.display_time).grid(
-            row=0, column=1
-        )
-        CTkButton(input_frame, text="RESET", command=self._on_reset).grid(
-            row=0, column=2
-        )
+        self.time_entry = CTkEntry(input_frame, placeholder_text="Minutes")
+        self.time_entry.grid(row=0, column=0)
+        self.set_button = CTkButton(input_frame, text="SET", command=self._on_start)
+        self.set_button.grid(row=0, column=1)
+        self.reset_button = CTkButton(input_frame, text="RESET", command=self._on_reset)
+        self.reset_button.grid(row=0, column=2)
+        self.reset_button.config(state="disabled")
 
-    def display_time(self):
-        self.completion_time = time.time() + 200
-        print(self.completion_time.strftime("%H:%M:%S"))
+    def _on_start(self):
+        minutes = int(self.time_entry.get())
+        self.shutdown_time = datetime.now() + timedelta(minutes=minutes)
+        self.set_button.config(state="disabled")
+        self.reset_button.config(state="normal")
         self.update_display()
 
     def update_display(self):
-        remaining_time = self.completion_time -  time.time()
-        display_string = "123"
-        self.time_label["text"] = remaining_time
-        self.completion_time += 1
-        self.after(1000, self.update_display)
+        remaining_time = self.shutdown_time - datetime.now()
+        display_string = str(remaining_time).split(".")[0]
+        self.time_label.config(text=display_string)
+        self.running_id = self.after(1000, self.update_display)
 
     def _on_reset(self):
-        print("Reset")
+        self.after_cancel(self.running_id)
+        self.set_button.config(state="normal")
+        self.time_label.config(text="00:00.00")
 
 
 if __name__ == "__main__":
