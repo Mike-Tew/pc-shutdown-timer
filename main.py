@@ -8,6 +8,7 @@ class Gui(CTk):
     def __init__(self):
         super().__init__()
 
+        self.set_appearance_mode("dark")
         self.title("PC Shutdown Timer")
         self.geometry("455x170")
         self.resizable(False, False)
