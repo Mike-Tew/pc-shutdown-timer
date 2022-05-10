@@ -1,5 +1,4 @@
-import time
-import tkinter as tk
+import os
 from datetime import datetime, timedelta
 
 from customtkinter import CTk, CTkButton, CTkEntry, CTkFrame, CTkLabel
@@ -29,7 +28,7 @@ class Gui(CTk):
 
     def _on_start(self):
         minutes = int(self.time_entry.get())
-        self.shutdown_time = datetime.now() + timedelta(minutes=minutes)
+        self.shutdown_time = datetime.now() + timedelta(seconds=minutes)
         self.set_button.config(state="disabled")
         self.reset_button.config(state="normal")
         self.update_display()
@@ -40,10 +39,19 @@ class Gui(CTk):
         self.time_label.config(text=display_string)
         self.running_id = self.after(1000, self.update_display)
 
+        if self.shutdown_time < datetime.now():
+            self.shutdown()
+            self.after_cancel(self.running_id)
+
     def _on_reset(self):
         self.after_cancel(self.running_id)
         self.set_button.config(state="normal")
         self.time_label.config(text="00:00.00")
+
+    def shutdown(self):
+        print("Shutting Down")
+        self.time_label.config(text="Shutdown")
+        # os.system("shutdown /s /t 0")
 
 
 if __name__ == "__main__":
